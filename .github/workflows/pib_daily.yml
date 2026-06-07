@@ -34,9 +34,9 @@ jobs:
       - name: Install Python packages
         run: pip install requests beautifulsoup4
 
-      # Step 5: Install Node.js docx package
+      # Step 5: Install Node.js docx package (local install so Node can find it)
       - name: Install Node packages
-        run: npm install -g docx
+        run: npm install docx
 
       # Step 6: Run the scraper
       - name: Run PIB scraper
