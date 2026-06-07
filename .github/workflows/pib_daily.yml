@@ -52,14 +52,14 @@ jobs:
           username: ${{ secrets.GMAIL_ADDRESS }}
           password: ${{ secrets.GMAIL_APP_PASSWORD }}
           subject: "PIB Press Release Digest — ${{ env.DIGEST_DATE }}"
-          to: ${{ secrets.GMAIL_ADDRESS }}
+          to: ${{ secrets.SWAP_EMAIL }}
           from: "PIB Digest <${{ secrets.GMAIL_ADDRESS }}>"
           body: |
             Hello,
 
             Please find attached today's PIB Press Release Digest.
 
-            This is an automated email generated from pib.gov.in.
+            This is an automated email generated from github through Aman.
 
             — PIB Digest Bot
           attachments: output/*.docx
