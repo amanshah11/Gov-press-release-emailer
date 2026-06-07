@@ -263,7 +263,18 @@ Packer.toBuffer(doc).then(buf => {
     with open(js_path, "w", encoding="utf-8") as f:
         f.write(js_script)
 
-    result = subprocess.run(["node", js_path], capture_output=True, text=True)
+    # Set NODE_PATH so Node can find 'docx' whether installed locally or globally
+    env = os.environ.copy()
+    local_modules = os.path.join(SCRIPT_DIR, "node_modules")
+    try:
+        global_modules = subprocess.run(
+            ["npm", "root", "-g"], capture_output=True, text=True
+        ).stdout.strip()
+    except Exception:
+        global_modules = ""
+    env["NODE_PATH"] = local_modules + os.pathsep + global_modules
+
+    result = subprocess.run(["node", js_path], capture_output=True, text=True, env=env)
 
     try:
         os.unlink(js_path)
