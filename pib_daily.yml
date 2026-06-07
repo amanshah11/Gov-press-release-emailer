@@ -1,0 +1,73 @@
+name: PIB Daily Press Release Digest
+
+on:
+  schedule:
+    # Runs at 7:30 AM IST every day
+    # GitHub uses UTC — IST is UTC+5:30, so 7:30 AM IST = 2:00 AM UTC
+    - cron: '0 2 * * *'
+
+  # Also lets you trigger it manually from GitHub website (useful for testing)
+  workflow_dispatch:
+
+jobs:
+  generate-digest:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Download your repo files
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Install Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Step 3: Install Node.js (needed for Word doc generation)
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Step 4: Install Python dependencies
+      - name: Install Python packages
+        run: pip install requests beautifulsoup4
+
+      # Step 5: Install Node.js docx package
+      - name: Install Node packages
+        run: npm install -g docx
+
+      # Step 6: Run the scraper
+      - name: Run PIB scraper
+        run: python pib_scraper.py
+
+      # Step 7: Email the generated .docx file
+      - name: Send digest by email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.GMAIL_ADDRESS }}
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          subject: "PIB Press Release Digest — ${{ env.DIGEST_DATE }}"
+          to: ${{ secrets.GMAIL_ADDRESS }}
+          from: "PIB Digest <${{ secrets.GMAIL_ADDRESS }}>"
+          body: |
+            Hello,
+
+            Please find attached today's PIB Press Release Digest.
+
+            This is an automated email generated from pib.gov.in.
+
+            — PIB Digest Bot
+          attachments: output/*.docx
+
+      # Step 8: Save the file in GitHub too (optional, keeps last 30 days)
+      - name: Upload digest as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PIB-Digest-${{ github.run_number }}
+          path: output/*.docx
+          retention-days: 30
