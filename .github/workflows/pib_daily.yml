@@ -2,12 +2,15 @@ name: PIB Daily Press Release Digest
 
 on:
   schedule:
-    # Runs at 7:30 AM IST every day
-    # GitHub uses UTC — IST is UTC+5:30, so 7:30 AM IST = 2:00 AM UTC
-    - cron: '0 2 * * *'
+    # Runs at 3:00 AM IST every day
+    # GitHub uses UTC — IST is UTC+5:30, so 3:00 AM IST = 9:30 PM UTC (previous day)
+    - cron: '30 21 * * *'
 
   # Also lets you trigger it manually from GitHub website (useful for testing)
   workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   generate-digest:
@@ -16,19 +19,19 @@ jobs:
     steps:
       # Step 1: Download your repo files
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       # Step 2: Install Python
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v5.4.0
         with:
           python-version: '3.11'
 
       # Step 3: Install Node.js (needed for Word doc generation)
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.3.0
         with:
-          node-version: '20'
+          node-version: '22'
 
       # Step 4: Install Python dependencies
       - name: Install Python packages
@@ -44,7 +47,7 @@ jobs:
 
       # Step 7: Email the generated .docx file
       - name: Send digest by email
-        uses: dawidd6/action-send-mail@v3
+        uses: dawidd6/action-send-mail@v4
         with:
           server_address: smtp.gmail.com
           server_port: 465
@@ -52,21 +55,21 @@ jobs:
           username: ${{ secrets.GMAIL_ADDRESS }}
           password: ${{ secrets.GMAIL_APP_PASSWORD }}
           subject: "PIB Press Release Digest — ${{ env.DIGEST_DATE }}"
-          to: ${{ secrets.SWAP_EMAIL }}
+          to: ${{ secrets.RECIPIENT_EMAIL }}
           from: "PIB Digest <${{ secrets.GMAIL_ADDRESS }}>"
           body: |
             Hello,
 
             Please find attached today's PIB Press Release Digest.
 
-            This is an automated email generated from github through Aman.
+            This is an automated email generated from pib.gov.in.
 
             — PIB Digest Bot
           attachments: output/*.docx
 
       # Step 8: Save the file in GitHub too (optional, keeps last 30 days)
       - name: Upload digest as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: PIB-Digest-${{ github.run_number }}
           path: output/*.docx
