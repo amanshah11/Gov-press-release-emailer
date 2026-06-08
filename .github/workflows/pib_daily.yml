@@ -64,7 +64,7 @@ jobs:
 
             This is an automated email generated from pib.gov.in.
 
-            — PIB Digest Bot
+            — PIB Digest Bot by Aman
           attachments: output/*.docx
 
       # Step 8: Save the file in GitHub too (optional, keeps last 30 days)
