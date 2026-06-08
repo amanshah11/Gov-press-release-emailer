@@ -13,6 +13,7 @@ Usage:
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 import json
 import subprocess
 import os
@@ -358,6 +359,8 @@ if __name__ == "__main__":
     elif args.today:
         target = datetime.now()
     else:
-        target = datetime.now() - timedelta(days=1)  # Default: yesterday
+        # Use IST timezone so "yesterday" is correct regardless of when GitHub runs
+        IST = ZoneInfo("Asia/Kolkata")
+        target = datetime.now(IST) - timedelta(days=1)
 
     run(target)
