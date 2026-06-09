@@ -56,27 +56,34 @@ def fetch_release_list(target_date: datetime) -> list:
     if count_tag:
         print(f"  PIB reports: {count_tag.strip()}")
 
-    releases, current_ministry = [], "Uncategorised"
+    releases = []
     content = (soup.find("div", id="pageContent")
                or soup.find("div", class_="content")
                or soup)
 
-    for tag in content.find_all(["h3", "li"]):
-        if tag.name == "h3":
-            text = tag.get_text(strip=True)
-            if text:
-                current_ministry = text
-        elif tag.name == "li":
-            link = tag.find("a", href=True)
-            if link and "PressReleasePage" in link.get("href", ""):
-                href     = link["href"]
-                title    = link.get_text(strip=True)
-                full_url = href if href.startswith("http") else "https://www.pib.gov.in" + href
-                m        = re.search(r"PRID=(\d+)", full_url, re.IGNORECASE)
-                prid     = m.group(1) if m else ""
-                if title:
-                    releases.append({"ministry": current_ministry,
-                                     "title": title, "url": full_url, "prid": prid})
+    # PIB HTML structure: <h3>Ministry Name</h3> followed by sibling <ul><li>releases</li></ul>
+    # We iterate each h3, then walk its next siblings until the next h3.
+    # This is the only reliable way to correctly assign releases to ministries.
+    for h3 in content.find_all("h3"):
+        ministry = h3.get_text(strip=True)
+        if not ministry:
+            continue
+        for sibling in h3.find_next_siblings():
+            if sibling.name == "h3":
+                break  # hit next ministry, stop
+            # releases are in <li> tags, either directly or inside a <ul>
+            lis = sibling.find_all("li") if sibling.name in ["ul", "div"] else ([sibling] if sibling.name == "li" else [])
+            for li in lis:
+                link = li.find("a", href=True)
+                if link and "PressReleasePage" in link.get("href", ""):
+                    href     = link["href"]
+                    title    = link.get_text(strip=True)
+                    full_url = href if href.startswith("http") else "https://www.pib.gov.in" + href
+                    m        = re.search(r"PRID=(\d+)", full_url, re.IGNORECASE)
+                    prid     = m.group(1) if m else ""
+                    if title:
+                        releases.append({"ministry": ministry,
+                                         "title": title, "url": full_url, "prid": prid})
 
     # Deduplicate by PRID
     seen, unique = set(), []
