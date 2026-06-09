@@ -1,6 +1,6 @@
 # 📰 PIB Daily Press Release Digest
 
-> Automatically scrapes [pib.gov.in](https://www.pib.gov.in) every morning and emails a neatly formatted **Word document** of all press releases from the previous day — grouped by Ministry, with clickable links.
+> Automatically scrapes [pib.gov.in](https://www.pib.gov.in) every evening and emails a neatly formatted **Word document** of all that day's press releases — grouped by Ministry, with clickable links.
 
 Runs entirely on **GitHub Actions** for free. No server. No laptop. Works from an iPad.
 
@@ -8,10 +8,10 @@ Runs entirely on **GitHub Actions** for free. No server. No laptop. Works from a
 
 ## 📬 What You Get
 
-Every morning at **7:30 AM IST**, a `.docx` lands in your inbox:
+Every evening at **11:00 PM IST**, a `.docx` lands in your inbox:
 
-- 📋 All press releases from the previous day
-- 🏛️ Grouped by Ministry
+- 📋 All press releases published that day
+- 🏛️ Correctly grouped by Ministry
 - 🔗 Each title is a clickable link to the full release on pib.gov.in
 - 🔢 PRID reference number for each release
 - 📄 Page numbers, header, footer, auto-timestamp
@@ -31,13 +31,13 @@ Every morning at **7:30 AM IST**, a `.docx` lands in your inbox:
 
 ## ⚙️ Setup
 
-### 1. Fork or clone this repo
+### 1. Fork this repo
 
 Click **Fork** (top right) to copy it to your own GitHub account.
 
 ### 2. Create a Gmail App Password
 
-GitHub needs permission to send email through Gmail.
+GitHub needs permission to send email through your Gmail.
 
 1. Go to [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
 2. Make sure 2-Step Verification is enabled first
@@ -46,38 +46,54 @@ GitHub needs permission to send email through Gmail.
 
 ### 3. Add GitHub Secrets
 
-In your repo, go to **Settings → Secrets and variables → Actions → New repository secret** and add all three:
+In your repo go to **Settings → Secrets and variables → Actions → New repository secret** and add all three:
 
 | Secret Name | Value |
 |---|---|
-| `GMAIL_ADDRESS` | The Gmail address used to **send** the email |
-| `GMAIL_APP_PASSWORD` | The 16-character App Password from Step 2 |
-| `RECIPIENT_EMAIL` | The email address to **receive** the digest |
+| `GMAIL_ADDRESS` | Gmail address used to **send** the email |
+| `GMAIL_APP_PASSWORD` | 16-character App Password from Step 2 |
+| `RECIPIENT_EMAIL` | Email address to **receive** the digest |
+
+> The digest is sent to **both** `GMAIL_ADDRESS` and `RECIPIENT_EMAIL`.
 
 ### 4. Test it
 
-Go to the **Actions** tab → **PIB Daily Press Release Digest** → **Run workflow** → **Run workflow**.
+Go to **Actions** tab → **PIB Daily Press Release Digest** → **Run workflow** → **Run workflow**.
 
 Wait ~2 minutes. Check your inbox. ✅
+
+The email subject will show today's date. The attached `.docx` contains all releases PIB has published so far today.
 
 ---
 
 ## 🕐 Schedule
 
-The workflow runs daily at **2:00 AM UTC = 7:30 AM IST**.
+Runs daily at **11:00 PM IST** (5:30 PM UTC).
 
-To change the time, edit `.github/workflows/pib_daily.yml` and update the cron line:
+PIB publishes releases throughout the day — running at 11 PM ensures you get the complete day's list.
+
+To change the time, edit `.github/workflows/pib_daily.yml`:
 
 ```yaml
-- cron: '0 2 * * *'   # minute hour(UTC) day month weekday
+- cron: '30 17 * * *'   # minute hour(UTC) day month weekday
 ```
 
 | Delivery Time (IST) | Cron (UTC) |
 |---|---|
-| 6:00 AM | `30 0 * * *` |
-| 7:30 AM | `0 2 * * *` |
-| 8:00 AM | `30 2 * * *` |
-| 9:00 AM | `30 3 * * *` |
+| 9:00 PM | `30 15 * * *` |
+| 10:00 PM | `30 16 * * *` |
+| **11:00 PM** | **`30 17 * * *`** ← current |
+| 11:30 PM | `0 18 * * *` |
+
+---
+
+## 📅 How the Date Works
+
+PIB always returns the **current day's** releases regardless of any date parameters in the URL. So:
+
+- The scraper uses `datetime.now()` — whatever day it runs, that day's releases are fetched and the document is labeled with that date
+- Running at 11 PM IST means the UTC time is 5:30 PM — still the same calendar date, so the label is always correct
+- Running **manually** at any time gives you that day's releases so far
 
 ---
 
@@ -89,21 +105,18 @@ Every generated `.docx` is also saved under **Actions → your latest run → Ar
 
 ## 🔧 Manual Usage
 
-You can also run the scraper locally:
+Run locally with:
 
 ```bash
-# Install dependencies
+# Install dependencies (once)
 pip install requests beautifulsoup4
 npm install docx
 
-# Fetch yesterday's releases (default)
+# Fetch today's releases
 python pib_scraper.py
 
-# Fetch a specific date
-python pib_scraper.py --date 2026-06-06
-
-# Fetch today's releases
-python pib_scraper.py --today
+# Fetch and label with a specific date
+python pib_scraper.py --date 2026-06-10
 ```
 
 Output `.docx` files appear in the `output/` folder.
@@ -134,12 +147,18 @@ All data is fetched from the official **Press Information Bureau** website:
 **No email received**
 - Check your spam folder
 - Verify the App Password has no spaces
-- Re-run from Actions tab and check the logs
+- Re-run manually from the Actions tab and check the logs
 
 **Red ✗ on the Actions run**
 - Click the failed run → click the failed step to read the error
+- The workflow auto-retries once (60s wait) before failing
 - Most common cause: incorrect App Password, or PIB was temporarily down
 
-**Empty digest / no releases found**
-- PIB may not have published for that day (public holidays, weekends)
-- The script handles this gracefully and still sends a notice email
+**Fewer releases than expected**
+- PIB publishes throughout the day — if you run before 11 PM you may not get all releases yet
+- Run again at 11 PM for the complete day's list
+
+**GitHub Actions didn't run on schedule**
+- Go to Actions tab and check for a yellow "disabled" banner — click Enable
+- Or make a small commit (edit README, add a space) to reactivate the schedule
+- GitHub pauses scheduled workflows on inactive repos after a period of inactivity
