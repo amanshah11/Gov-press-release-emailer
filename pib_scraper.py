@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
 PIB Daily Press Release Scraper
-Fetches all English press releases from pib.gov.in for yesterday
+Fetches all English press releases from pib.gov.in for today
 and generates a formatted Word document.
 
 Usage:
-    python pib_scraper.py              # yesterday (default)
+    python pib_scraper.py              # today (default)
     python pib_scraper.py --date 2026-06-08
     python pib_scraper.py --today
 """
@@ -203,14 +203,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     g = parser.add_mutually_exclusive_group()
     g.add_argument("--date",  type=str)
-    g.add_argument("--today", action="store_true")
     args = parser.parse_args()
 
     if args.date:
         target = datetime.strptime(args.date, "%Y-%m-%d")
-    elif args.today:
-        target = datetime.now()
     else:
-        target = datetime.now() - timedelta(days=1)  # yesterday
+        # PIB ignores d/m/y URL params and always returns current day releases.
+        # So we always use today — the schedule at 11PM IST fetches that day's releases.
+        target = datetime.now()
 
     run(target)
