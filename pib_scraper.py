@@ -50,7 +50,7 @@ HEADERS = {
 def fetch_release_list(target_date: datetime) -> list:
     """Returns list of {ministry, title, url, prid} for the given date."""
     url = (
-        f"{PIB_BASE}?reg=3&lang=1"
+        f"{PIB_BASE}?reg=48&lang=1"
         f"&d={target_date.day}&m={target_date.month}&y={target_date.year}"
     )
     print(f"  Fetching: {url}")
@@ -98,7 +98,17 @@ def fetch_release_list(target_date: datetime) -> list:
                         "prid": prid,
                     })
 
-    return releases
+    # Deduplicate by PRID — same release can appear under multiple ministries
+    seen_prids = set()
+    unique_releases = []
+    for r in releases:
+        if r["prid"] and r["prid"] in seen_prids:
+            continue
+        if r["prid"]:
+            seen_prids.add(r["prid"])
+        unique_releases.append(r)
+
+    return unique_releases
 
 
 # ─────────────────────────────────────────────
