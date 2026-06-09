@@ -58,7 +58,7 @@ jobs:
           username: ${{ secrets.GMAIL_ADDRESS }}
           password: ${{ secrets.GMAIL_APP_PASSWORD }}
           subject: "PIB Press Release Digest — ${{ env.DIGEST_DATE }}"
-          to: ${{ secrets.GMAIL_ADDRESS }}
+          to: ${{ secrets.GMAIL_ADDRESS }},${{ secrets.RECIPIENT_EMAIL }}
           from: "PIB Digest <${{ secrets.GMAIL_ADDRESS }}>"
           body: |
             Hello,
