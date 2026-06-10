@@ -2,9 +2,9 @@ name: PIB Daily Press Release Digest
 
 on:
   schedule:
-    # Runs at 11:00 PM IST every day
-    # GitHub uses UTC — IST is UTC+5:30, so 11:00 PM IST = 5:30 PM UTC
-    - cron: '30 17 * * *'
+    # Runs at 10:00 PM IST every day
+    # GitHub uses UTC — IST is UTC+5:30, so 10:00 PM IST = 4:30 PM UTC
+    - cron: '30 16 * * *'
 
   # Trigger manually from GitHub website anytime
   workflow_dispatch:
