@@ -8,7 +8,7 @@ Runs entirely on **GitHub Actions** for free. No server. No laptop. Works from a
 
 ## 📬 What You Get
 
-Every evening at **11:00 PM IST**, a `.docx` lands in your inbox:
+Every evening at **09:00 PM IST**, a `.docx` lands in your inbox:
 
 - 📋 All press releases published that day
 - 🏛️ Correctly grouped by Ministry
@@ -68,21 +68,20 @@ The email subject will show today's date. The attached `.docx` contains all rele
 
 ## 🕐 Schedule
 
-Runs daily at **11:00 PM IST** (5:30 PM UTC).
+Runs daily at **09:00 PM IST** (3:30 PM UTC).
 
-PIB publishes releases throughout the day — running at 11 PM ensures you get the complete day's list.
+PIB publishes releases throughout the day — running at 09 PM ensures you get the complete day's list.
 
 To change the time, edit `.github/workflows/pib_daily.yml`:
 
 ```yaml
-- cron: '30 17 * * *'   # minute hour(UTC) day month weekday
+- cron: '30 15 * * *'   # minute hour(UTC) day month weekday
 ```
 
 | Delivery Time (IST) | Cron (UTC) |
 |---|---|
-| 9:00 PM | `30 15 * * *` |
+| 9:00 PM | `30 15 * * *`** ← current |
 | 10:00 PM | `30 16 * * *` |
-| **11:00 PM** | **`30 17 * * *`** ← current |
 | 11:30 PM | `0 18 * * *` |
 
 ---
@@ -92,7 +91,7 @@ To change the time, edit `.github/workflows/pib_daily.yml`:
 PIB always returns the **current day's** releases regardless of any date parameters in the URL. So:
 
 - The scraper uses `datetime.now()` — whatever day it runs, that day's releases are fetched and the document is labeled with that date
-- Running at 11 PM IST means the UTC time is 5:30 PM — still the same calendar date, so the label is always correct
+- Running at 09 PM IST means the UTC time is 3:30 PM — still the same calendar date, so the label is always correct
 - Running **manually** at any time gives you that day's releases so far
 
 ---
@@ -155,7 +154,7 @@ All data is fetched from the official **Press Information Bureau** website:
 - Most common cause: incorrect App Password, or PIB was temporarily down
 
 **Fewer releases than expected**
-- PIB publishes throughout the day — if you run before 11 PM you may not get all releases yet
+- PIB publishes throughout the day — if you run before 09 PM you may not get all releases yet
 - Run again at 11 PM for the complete day's list
 
 **GitHub Actions didn't run on schedule**
