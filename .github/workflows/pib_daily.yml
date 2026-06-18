@@ -4,7 +4,7 @@ on:
   schedule:
     # Runs at 09:00 PM IST every day
     # GitHub uses UTC — IST is UTC+5:30, so 09:00 PM IST = 3:30 PM UTC
-    - cron: '30 14 * * *'
+    - cron: '30 13 * * *'
 
   # Trigger manually from GitHub website anytime
   workflow_dispatch:
